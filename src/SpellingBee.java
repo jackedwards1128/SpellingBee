@@ -44,16 +44,28 @@ public class SpellingBee {
     //  Store them all in the ArrayList words. Do this by calling ANOTHER method
     //  that will find the substrings recursively.
     public void generate() {
-        // YOUR CODE HERE — Call your recursive method!
-        for (int wordLength = 0; wordLength <= letters.length(); wordLength++) {
-            String unusedLetters = letters;
-            String word = "";
-            for (int i = 0; i < wordLength; i++) {
-                for (int j = 0; j < unusedLetters.length(); j++) {
-                    word = word + unusedLetters.charAt(j);
-                    unusedLetters = unusedLetters.substring(0,j) + unusedLetters.substring(j+1);
-                }
+        permutate(letters, "");
+        for(int i = 0; i < words.size(); i++) {
+            System.out.println(words.get(i));
+        }
+    }
+
+    public void permutate(String storage, String output) {
+        words.add(output);
+        if(storage.length() == 0) {
+            return;
+        }
+
+        for(int i = 0; i < storage.length(); i++) {
+            String subOutput = output + storage.charAt(i);
+            String subStorage = "";
+            if (i != 0) {
+                subStorage = storage.substring(0,i);
             }
+            else if (i != storage.length() - 1) {
+                subStorage = subStorage + storage.substring(i+1);
+            }
+            permutate(subStorage, subOutput);
         }
 
     }
@@ -62,6 +74,49 @@ public class SpellingBee {
     //  that will find the substrings recursively.
     public void sort() {
         // YOUR CODE HERE
+
+    }
+
+    public char[] mergeSort(char[] arr, int start, int end) {
+        if (start == end) {
+            char[] result = new char[1];
+            result[0] = arr[start];
+            return result;
+        }
+        int middle = (start + end) / 2;
+        char[] leftArr = mergeSort(arr, start, middle);
+        char[] rightArr = mergeSort(arr, middle + 1, end);
+        return merge(leftArr, rightArr);
+    }
+
+    public char[] merge(char[] arr1, char[] arr2) {
+        // Set up the array for the merged array
+        char[] result = new char[arr1.length + arr2.length];
+        int a = 0;
+        int b = 0;
+        int c = 0;
+
+        // Combine the two sub arrays into the result array
+        while (a < arr1.length && b < arr2.length) {
+            if (arr1[a] < arr2[b]) {
+                result[c] = arr1[a];
+                a++;
+            } else {
+                result[c] = arr2[b];
+                b++;
+            }
+            c++;
+        }
+
+        // Take leftover from whatever array is still untransfered and dump it into result array
+        while(a < arr1.length) {
+            result[c++] = arr1[a++];
+        }
+        while(b < arr2.length) {
+            result[c++] = arr1[b++];
+        }
+
+        return result;
     }
 
     // Removes duplicates from the sorted list.
