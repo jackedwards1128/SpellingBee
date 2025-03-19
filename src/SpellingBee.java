@@ -22,14 +22,15 @@ import java.util.Scanner;
  * It utilizes recursion to generate the strings, mergesort to sort them, and
  * binary search to find them in a dictionary.
  *
- * @author Zach Blick, [ADD YOUR NAME HERE]
+ * @author Zach Blick, Jack Edwards
  *
- * Written on March 5, 2023 for CS2 @ Menlo School
+ * Written on March 18, 2025 for CS2 @ Menlo School
  *
  * DO NOT MODIFY MAIN OR ANY OF THE METHOD HEADERS.
  */
 public class SpellingBee {
 
+    // Declare instance variables
     private String letters;
     private ArrayList<String> words;
     public static final int DICTIONARY_SIZE = 143091;
@@ -40,81 +41,78 @@ public class SpellingBee {
         words = new ArrayList<String>();
     }
 
-    // TODO: generate all possible substrings and permutations of the letters.
-    //  Store them all in the ArrayList words. Do this by calling ANOTHER method
-    //  that will find the substrings recursively.
+    // Create all possible arrangements of letters where each letter may only be used AT MOST once
     public void generate() {
         permutate(letters, "");
-        for(int i = 0; i < words.size(); i++) {
-            System.out.println(words.get(i));
-        }
     }
 
+    // Recursively run through a tree of all possible permutations of letters and add each one to a list
     public void permutate(String storage, String output) {
+        // Add the output to a list
         words.add(output);
+        // Once all the letters have been used, return (means this is at the bottom of a branch of the tree)
         if(storage.length() == 0) {
             return;
         }
 
+        // Loop through each letter in the storage letters to try all possible combinations of choosing
+        // one of them to pick off and add to the output
         for(int i = 0; i < storage.length(); i++) {
             String subOutput = output + storage.charAt(i);
             String subStorage = "";
+            // Splice the given letter out of the storage string
             if (i != 0) {
                 subStorage = storage.substring(0,i);
             }
-            else if (i != storage.length() - 1) {
+            if (i != storage.length() - 1) {
                 subStorage = subStorage + storage.substring(i+1);
             }
+            // Continue the tree via a recursive call
             permutate(subStorage, subOutput);
         }
 
     }
 
-    // TODO: Apply mergesort to sort all words. Do this by calling ANOTHER method
-    //  that will find the substrings recursively.
+    // Alphabetically sort all of the possible permutations
     public void sort() {
-        // YOUR CODE HERE
-
+        words = mergeSort(words, 0, words.size() - 1);
     }
 
-    public char[] mergeSort(char[] arr, int start, int end) {
+    public ArrayList<String> mergeSort(ArrayList<String> arr, int start, int end) {
+        // Base case: if our subsection of the array is one word long, just return an array with that word
         if (start == end) {
-            char[] result = new char[1];
-            result[0] = arr[start];
+            ArrayList<String> result = new ArrayList<String>();
+            result.add(arr.get(start));
             return result;
         }
+
+        // Define the middle of the subarray and call mergeSort on each of the halves based on that middle
         int middle = (start + end) / 2;
-        char[] leftArr = mergeSort(arr, start, middle);
-        char[] rightArr = mergeSort(arr, middle + 1, end);
+        ArrayList<String> leftArr = mergeSort(arr, start, middle);
+        ArrayList<String> rightArr = mergeSort(arr, middle + 1, end);
+
+        // Merge the two halves together
         return merge(leftArr, rightArr);
     }
 
-    public char[] merge(char[] arr1, char[] arr2) {
+    public ArrayList<String> merge(ArrayList<String> arr1, ArrayList<String> arr2) {
         // Set up the array for the merged array
-        char[] result = new char[arr1.length + arr2.length];
+        ArrayList<String> result = new ArrayList<String>();
         int a = 0;
         int b = 0;
-        int c = 0;
 
         // Combine the two sub arrays into the result array
-        while (a < arr1.length && b < arr2.length) {
-            if (arr1[a] < arr2[b]) {
-                result[c] = arr1[a];
-                a++;
+        while (a < arr1.size() && b < arr2.size()) {
+            if (arr1.get(a).compareTo(arr2.get(b)) < 0) {
+                result.add(arr1.remove(a));
             } else {
-                result[c] = arr2[b];
-                b++;
+                result.add(arr2.remove(b));
             }
-            c++;
         }
 
         // Take leftover from whatever array is still untransfered and dump it into result array
-        while(a < arr1.length) {
-            result[c++] = arr1[a++];
-        }
-        while(b < arr2.length) {
-            result[c++] = arr1[b++];
-        }
+        result.addAll(arr1);
+        result.addAll(arr2);
 
         return result;
     }
@@ -131,10 +129,39 @@ public class SpellingBee {
         }
     }
 
-    // TODO: For each word in words, use binary search to see if it is in the dictionary.
-    //  If it is not in the dictionary, remove it from words.
+    // Checks which of the possible permutations of the user-inputted letters are real words
     public void checkWords() {
-        // YOUR CODE HERE
+        // Loop through every word and run binary search to determine whether they are in the dictionary
+        for (int i = 0; i < words.size(); i++) {
+            if (!binarySearch(0,DICTIONARY_SIZE-1, words.get(i))) {
+                // If the permutation is not in the dictionary, remove it from the words list
+                words.remove(i--);
+            }
+        }
+    }
+
+    // Searches for an item in a SORTED list by picking the spot in the middle, and determining whether
+    // to go left or right or not, and then recursively repeating the process
+    public boolean binarySearch(int start, int end, String target) {
+        // Base case: if there's only one thing in the array (end is exclusive here), check whether that
+        // one thing is the target, and then return true or false accordingly
+        if (end - start < 2) {
+            if (DICTIONARY[start].equals(target)) {
+                return true;
+            }
+            return false;
+        }
+
+        // Pick a spot in the middle and check if it's the target. If it isn't, determine whether to
+        // continue the search in the left or right direction, and recursively call binarySearch.
+        int middle = (start + end) / 2;
+        if (DICTIONARY[middle].equals(target)) {
+            return true;
+        }
+        if (DICTIONARY[middle].compareTo(target) > 0) {
+            return binarySearch(start, middle, target);
+        }
+        return binarySearch(middle + 1, end, target);
     }
 
     // Prints all valid words to wordList.txt
